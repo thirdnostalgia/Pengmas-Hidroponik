@@ -22,7 +22,9 @@ void loop()
   awal :
   lcd.clear();
 	lcd.setCursor(0, 0);
-  lcd.print("HIDROPONIK--TRKB");
+    lcd.print("HIDROPONIK");
+    lcd.setCursor(14, 0);
+    lcd.print(EEPROM.read(0));
   lcd.setCursor(0, 1);
   lcd.write(0);
   lcd.setCursor(1, 1);
@@ -32,10 +34,12 @@ void loop()
   input = Serial.readString();
   input.trim();
   
-  if(input == "kanan"){
+  if(input == "kanan" || input == "kiri"){
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("HIDROPONIK--TRKB");
+    lcd.print("HIDROPONIK");
+    lcd.setCursor(14, 0);
+    lcd.print(EEPROM.read(0));
     lcd.setCursor(1, 1);
     lcd.print("SET      STATUS");
     lcd.setCursor(9, 1);
@@ -53,24 +57,38 @@ void loop()
       goto awal;
       
     }
-    if(input == "kanan"){
+    if(input == "kanan" || input == "kiri"){
       goto awal;
     }
+
   }
   
   if(input == "ok"){
-    set :
+    lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Durasi (detik) ");
+    lcd.print("Durasi (detik) : ");
     lcd.setCursor(0, 1);
-    lcd.write(0);
-    lcd.setCursor(1, 1);
-    lcd.print("5     10     15");
+    lcd.print("0 Menit");
+    int durasi= 0;
+
+    set :
+    lcd.setCursor(0, 1);
+    lcd.print(durasi);
     while(Serial.available() == 0){}
-    
     input = Serial.readString();
     input.trim();
-    Serial.println(input);
+    
+    if (input == "kanan"){
+        durasi++;
+        goto set; 
+    }else if (input == "kiri"){
+        durasi--;
+        goto set;
+    }else if(input == "ok"){
+        EEPROM.write(0, durasi);
+        EEPROM.commit();
+    }
+
 
     if (input == "kanan"){
       lcd.clear();
@@ -139,7 +157,7 @@ void loop()
     
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print(EEPROM.read(1));
+      lcd.print(EEPROM.read(0));
       delay(2000);
     
     
