@@ -1,4 +1,4 @@
-#define TdsSensorPin A0
+#define TdsSensorPin 27
 #define VREF 3.3              // analog reference voltage(Volt) of the ADC
 #define SCOUNT  30            // sum of sample point
 
@@ -9,7 +9,7 @@ int copyIndex = 0;
 
 float averageVoltage = 0;
 float tdsValue = 0;
-float temperature = 23;       // current temperature for compensation
+float temperature = 25;       // current temperature for compensation
 
 // median filtering algorithm
 int getMedianNum(int bArray[], int iFilterLen){
@@ -58,7 +58,7 @@ void loop(){
       analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
       
       // read the analog value more stable by the median filtering algorithm, and convert to voltage value
-      averageVoltage = getMedianNum(analogBufferTemp,SCOUNT) * (float)VREF / 1024.0;
+      averageVoltage = getMedianNum(analogBufferTemp,SCOUNT) * (float)VREF / 4096.0;
       
       //temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0)); 
       float compensationCoefficient = 1.0+0.02*(temperature-25.0);
@@ -70,7 +70,8 @@ void loop(){
       
       //Serial.print("voltage:");
       //Serial.print(averageVoltage,2);
-       Serial.print("TDS Value:");
+      //Serial.print("V   ");
+      Serial.print("TDS Value:");
       Serial.print(tdsValue,0);
       Serial.println("ppm");
     }
