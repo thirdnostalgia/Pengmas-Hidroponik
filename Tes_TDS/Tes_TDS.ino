@@ -9,7 +9,7 @@ int copyIndex = 0;
 
 float averageVoltage = 0;
 float tdsValue = 0;
-float temperature = 25;       // current temperature for compensation
+float temperature = 28;       // current temperature for compensation
 
 // median filtering algorithm
 int getMedianNum(int bArray[], int iFilterLen){
@@ -72,7 +72,7 @@ void loop(){
       //Serial.print(averageVoltage,2);
       //Serial.print("V   ");
       Serial.print("TDS Value:");
-      Serial.print(tdsValue,0);
+      Serial.print(1.3*tdsValue,0);
       Serial.println("ppm");
     }
   }
