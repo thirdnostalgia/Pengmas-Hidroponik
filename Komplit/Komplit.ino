@@ -255,7 +255,7 @@ void nutrisi(int target_tds, int jeda){
       digitalWrite(relay,LOW);
       delay(jeda*1000);
       read_tds();
-      delay(20000); 
+      delay(8000); 
     }  
   }
   
