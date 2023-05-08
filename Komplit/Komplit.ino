@@ -78,7 +78,7 @@ void read_tds(){
       
       //convert voltage value to tds value
       tdsValue=(133.42*compensationVoltage*compensationVoltage*compensationVoltage - 255.86*compensationVoltage*compensationVoltage + 857.39*compensationVoltage)*0.5;
-      tdsValue = tdsValue*1.3;
+      tdsValue = tdsValue*1.19;
       //Serial.print("voltage:");
       //Serial.print(averageVoltage,2);
       //Serial.print("V   ");
@@ -165,7 +165,7 @@ void layar(){
   }
 
   if(j%2 != 0 && i%2 == 0 ){  //submenu set
-  set_target :
+   set_target :
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Set Target: ");
@@ -232,10 +232,10 @@ void layar(){
     }
     
 
-    delay(500);
+    delay(50);
     i = 0;
     j = 0;
-    nutrisi(target_tds,jeda);
+    // nutrisi(target_tds,jeda); //jalankan motor nutrisi
   }
 
   if(j%2 != 0 && i%2 != 0){  //submenu RESET
@@ -289,7 +289,7 @@ void loop() {
   // Serial.println(target_tds);
   // Serial.print("jeda = ");
   // Serial.println(jeda);
-  delay(500);
+  delay(50);
 }
 
 void Kanan(){
