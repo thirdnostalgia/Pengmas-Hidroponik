@@ -5,13 +5,13 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-#define TdsSensorPin 27
-#define kiri 15
-#define kanan  2
-#define ok  4
-#define back 18
-#define relay 12
-#define oneWireBus 26
+#define TdsSensorPin 27 //pin sensor tds
+#define kiri 15 //tombol kiri
+#define kanan  2 //tombol kanan
+#define ok  4 //tombol ok
+#define back 18 //tombol back
+#define relay 12 //relay untuk motor nutrisi
+#define oneWireBus 26 //sensor suhu
 
 // Setup a oneWire instance to communicate with any OneWire devices
 OneWire oneWire(oneWireBus);
@@ -34,7 +34,6 @@ int jeda;
 
 float averageVoltage = 0;
 float tdsValue = 0;
-//float temperature = 23.3;       // current temperature for compensation
 
 // median filtering algorithm
 int getMedianNum(int bArray[], int iFilterLen){
@@ -62,7 +61,7 @@ int getMedianNum(int bArray[], int iFilterLen){
 
 int read_tds(){
   static unsigned long analogSampleTimepoint = millis();
-  temperature = suhu();
+  temperature = suhu(); //ambil data suhu dari sensor
   if(millis()-analogSampleTimepoint > 40U){     //every 40 milliseconds,read the analog value from the ADC
     analogSampleTimepoint = millis();
     analogBuffer[analogBufferIndex] = analogRead(TdsSensorPin);    //read the analog value and store into the buffer
@@ -89,22 +88,15 @@ int read_tds(){
       //convert voltage value to tds value
       tdsValue=(133.42*compensationVoltage*compensationVoltage*compensationVoltage - 255.86*compensationVoltage*compensationVoltage + 857.39*compensationVoltage)*0.5;
       tdsValue = tdsValue*1.19;
-      //Serial.print("voltage:");
-      //Serial.print(averageVoltage,2);
-      //Serial.print("V   ");
-      Serial.print("TDS Value:");
-      Serial.print(tdsValue,0);
-      Serial.println("ppm");
       return tdsValue;
     }
   }
 }
 
-void menu(){
+void menu(){ //Menu utama
   lcd.clear();
 	lcd.setCursor(0, 0);
   lcd.print("HIDROPONIK  TRKB");
-
   lcd.setCursor(4, 3);
   lcd.print("PPM");
   lcd.setCursor(17, 3);
@@ -141,20 +133,20 @@ void menu(){
   lcd.setCursor(12, 1);
   lcd.print("RESET");
   lcd.setCursor(0, 3);
-  lcd.print(int(tdsValue));
+  lcd.print(read_tds()); //Menampilkan tds saat ini
 
 }
 
-int i = 0;
-int j = 0;
-int b = 0;
+int i = 0; //tombol arah
+int j = 0; //tombol ok
+int b = 0; //tombol back
 
 void layar(){
   int temp_target = target_tds;
   int temp_jeda = jeda;
   
-  read_tds();
-  if(j%2 == 0 && i%2 == 0 ){
+  //menu utama
+  if(j%2 == 0 && i%2 == 0 ){ //i = tombol arah , j = tombol ok
     awal :
     j = 0;
     menu();
@@ -171,17 +163,17 @@ void layar(){
     lcd.write(0);
   }
 
-  if(j%2 != 0 && i%2 == 0 ){  //submenu set
+  if(j%2 != 0 && i%2 == 0 ){  //submenu SET
    set_target :
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Set Target: ");
-    i = 0;
+    i = 0; //arah
     b = 0; //back
-    j = 1;
+    j = 1; //ok
     
     while(j%2 != 0){ 
-      if(b%2 != 0){ 
+      if(b%2 != 0){ //jika tombol back ditekan
         target_tds = temp_target;
         i = 0;
         goto awal;
@@ -213,7 +205,7 @@ void layar(){
     j = 0;
 
     while(j%2 == 0){
-      if(b%2 != 0){
+      if(b%2 != 0){ //jika tombol back ditekan
         target_tds = temp_target;
         jeda = temp_jeda;
         goto set_target;
@@ -270,7 +262,7 @@ void nutrisi(int target_tds, int jeda){
   
 }
 
-float suhu(){
+float suhu(){ //Baca Temperature
   sensors.requestTemperatures(); 
   float temperatureC = sensors.getTempCByIndex(0);
   return temperatureC;
@@ -287,10 +279,7 @@ void setup() {
   lcd.createChar(0, arrow); //logo panah
   //EEPROM.begin(255);
   sensors.begin(); // sensor suhu
-
 }
-
-
 
 void loop() {
   layar();
@@ -298,6 +287,7 @@ void loop() {
   delay(50);
 }
 
+//Fungsi - fungsi Interrupt
 void Kanan(){
    
   static unsigned long last_interrupt_time = 0;
