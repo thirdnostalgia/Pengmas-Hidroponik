@@ -1,7 +1,9 @@
 #define VREF 3.3              // analog reference voltage(Volt) of the ADC
 #define SCOUNT  30            // sum of sample point
 #include <LiquidCrystal_I2C.h>
-#include<EEPROM.h>
+//#include<EEPROM.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 #define TdsSensorPin 27
 #define kiri 15
@@ -9,6 +11,13 @@
 #define ok  4
 #define back 18
 #define relay 12
+#define oneWireBus 26
+
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire(oneWireBus);
+
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors(&oneWire);
 
 // Set the LCD address to 0x27 for a 20 chars and 4 line display
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -25,7 +34,7 @@ int jeda;
 
 float averageVoltage = 0;
 float tdsValue = 0;
-float temperature = 23.3;       // current temperature for compensation
+//float temperature = 23.3;       // current temperature for compensation
 
 // median filtering algorithm
 int getMedianNum(int bArray[], int iFilterLen){
@@ -51,8 +60,9 @@ int getMedianNum(int bArray[], int iFilterLen){
   return bTemp;
 }
 
-void read_tds(){
+int read_tds(){
   static unsigned long analogSampleTimepoint = millis();
+  temperature = suhu();
   if(millis()-analogSampleTimepoint > 40U){     //every 40 milliseconds,read the analog value from the ADC
     analogSampleTimepoint = millis();
     analogBuffer[analogBufferIndex] = analogRead(TdsSensorPin);    //read the analog value and store into the buffer
@@ -85,6 +95,7 @@ void read_tds(){
       Serial.print("TDS Value:");
       Serial.print(tdsValue,0);
       Serial.println("ppm");
+      return tdsValue;
     }
   }
 }
@@ -125,14 +136,10 @@ void menu(){
     lcd.print(target_tds);
   }
 
- 
-  
   lcd.setCursor(1, 1);
-  lcd.print("SET");
-  
+  lcd.print("SET"); 
   lcd.setCursor(12, 1);
   lcd.print("RESET");
-  
   lcd.setCursor(0, 3);
   lcd.print(int(tdsValue));
 
@@ -170,7 +177,7 @@ void layar(){
     lcd.setCursor(0,0);
     lcd.print("Set Target: ");
     i = 0;
-    b = 0;
+    b = 0; //back
     j = 1;
     
     while(j%2 != 0){ 
@@ -230,12 +237,11 @@ void layar(){
       lcd.setCursor(13,2);
       lcd.print(" S   ");
     }
-    
-
+  
     delay(50);
     i = 0;
     j = 0;
-    // nutrisi(target_tds,jeda); //jalankan motor nutrisi
+    nutrisi(target_tds,jeda); //jalankan motor nutrisi
   }
 
   if(j%2 != 0 && i%2 != 0){  //submenu RESET
@@ -248,17 +254,26 @@ void layar(){
 }
 
 void nutrisi(int target_tds, int jeda){
+  lcd.clear();
+  lcd.lcd.setCursor(3,2);
+  lcd.print("On Progress...");
   if (target_tds != 0 && jeda != 0){
-    while(tdsValue < target_tds){
+    int curent_tds = read_tds();
+    while(curent_tds < target_tds){
       digitalWrite(relay,HIGH); 
       delay(1000); //nyemprot 1 detik
       digitalWrite(relay,LOW);
       delay(jeda*1000);
-      read_tds();
-      delay(8000); 
+      curent_tds = read_tds();
     }  
   }
   
+}
+
+float suhu(){
+  sensors.requestTemperatures(); 
+  float temperatureC = sensors.getTempCByIndex(0);
+  return temperatureC;
 }
 
 void setup() {
@@ -271,6 +286,7 @@ void setup() {
   Serial.begin(9600);
   lcd.createChar(0, arrow); //logo panah
   //EEPROM.begin(255);
+  sensors.begin(); // sensor suhu
 
 }
 
@@ -279,16 +295,6 @@ void setup() {
 void loop() {
   layar();
   Serial.println(tdsValue);
-  // Serial.print("move = ");
-  // Serial.println(i);
-  // Serial.print("OK = ");
-  // Serial.println(j);
-  // Serial.print("back = ");
-  // Serial.println(b);
-  // Serial.print("target_tds = ");
-  // Serial.println(target_tds);
-  // Serial.print("jeda = ");
-  // Serial.println(jeda);
   delay(50);
 }
 
